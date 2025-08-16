@@ -1,109 +1,144 @@
-import React from "react";
-import {
-  Button,
-  Form,
-  Grid,
-  Header,
-  Message,
-  Segment
-} from "semantic-ui-react";
-import { connect } from "react-redux";
-import { NavLink, Redirect } from "react-router-dom";
-import { authLogin } from "../store/actions/auth";
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link, useNavigate } from 'react-router-dom';
+import { 
+  Button, 
+  Form, 
+  Grid, 
+  Header, 
+  Message, 
+  Segment,
+  Container 
+} from 'semantic-ui-react';
+import { loginUser, clearError, selectAuthLoading, selectAuthError } from '../store/slices/authSlice';
 
-class LoginForm extends React.Component {
-  state = {
-    username: "",
-    password: ""
-  };
+const Login = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  
+  const isLoading = useSelector(selectAuthLoading);
+  const error = useSelector(selectAuthError);
 
-  handleChange = e => {
-    this.setState({ [e.target.name]: e.target.value });
-  };
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
 
-  handleSubmit = e => {
-    e.preventDefault();
-    const { username, password } = this.state;
-    this.props.login(username, password);
-  };
+  const [formErrors, setFormErrors] = useState({});
 
-  render() {
-    const { error, loading, token } = this.props;
-    const { username, password } = this.state;
-    if (token) {
-      return <Redirect to="/" />;
+  useEffect(() => {
+    // Clear any previous errors when component mounts
+    dispatch(clearError());
+  }, [dispatch]);
+
+  const handleInputChange = (e, { name, value }) => {
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    
+    // Clear error for this field
+    if (formErrors[name]) {
+      setFormErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
     }
-    return (
-      <Grid
-        textAlign="center"
-        style={{ height: "100vh" }}
-        verticalAlign="middle"
-      >
+  };
+
+  const validateForm = () => {
+    const errors = {};
+    
+    if (!formData.email) {
+      errors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      errors.email = 'Email is invalid';
+    }
+    
+    if (!formData.password) {
+      errors.password = 'Password is required';
+    }
+    
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
+    try {
+      await dispatch(loginUser(formData)).unwrap();
+      navigate('/dashboard');
+    } catch (error) {
+      // Error is handled by the reducer
+      console.error('Login failed:', error);
+    }
+  };
+
+  return (
+    <Container style={{ marginTop: '2em' }}>
+      <Grid textAlign="center" style={{ height: '100vh' }} verticalAlign="middle">
         <Grid.Column style={{ maxWidth: 450 }}>
           <Header as="h2" color="teal" textAlign="center">
-            Log-in to your account
+            Log in to your account
           </Header>
-          {error && <p>{this.props.error.message}</p>}
+          
+          <Form size="large" onSubmit={handleSubmit}>
+            <Segment stacked>
+              <Form.Input
+                fluid
+                icon="user"
+                iconPosition="left"
+                placeholder="E-mail address"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                error={formErrors.email ? { content: formErrors.email, pointing: 'below' } : false}
+              />
+              
+              <Form.Input
+                fluid
+                icon="lock"
+                iconPosition="left"
+                placeholder="Password"
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleInputChange}
+                error={formErrors.password ? { content: formErrors.password, pointing: 'below' } : false}
+              />
 
-          <React.Fragment>
-            <Form size="large" onSubmit={this.handleSubmit}>
-              <Segment stacked>
-                <Form.Input
-                  onChange={this.handleChange}
-                  value={username}
-                  name="username"
-                  fluid
-                  icon="user"
-                  iconPosition="left"
-                  placeholder="Username"
-                />
-                <Form.Input
-                  onChange={this.handleChange}
-                  fluid
-                  value={password}
-                  name="password"
-                  icon="lock"
-                  iconPosition="left"
-                  placeholder="Password"
-                  type="password"
-                />
+              <Button 
+                color="teal" 
+                fluid 
+                size="large" 
+                type="submit"
+                loading={isLoading}
+                disabled={isLoading}
+              >
+                Log in
+              </Button>
+            </Segment>
+          </Form>
 
-                <Button
-                  color="teal"
-                  fluid
-                  size="large"
-                  loading={loading}
-                  disabled={loading}
-                >
-                  Login
-                </Button>
-              </Segment>
-            </Form>
-            <Message>
-              New to us? <NavLink to="/signup">Sign Up</NavLink>
+          {error && (
+            <Message negative>
+              <Message.Header>Login Failed</Message.Header>
+              <p>{error.error || error}</p>
             </Message>
-          </React.Fragment>
+          )}
+
+          <Message>
+            New to us? <Link to="/signup">Sign Up</Link>
+          </Message>
         </Grid.Column>
       </Grid>
-    );
-  }
-}
-
-const mapStateToProps = state => {
-  return {
-    loading: state.auth.loading,
-    error: state.auth.error,
-    token: state.auth.token
-  };
+    </Container>
+  );
 };
 
-const mapDispatchToProps = dispatch => {
-  return {
-    login: (username, password) => dispatch(authLogin(username, password))
-  };
-};
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(LoginForm);
+export default Login;
