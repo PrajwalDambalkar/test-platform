@@ -8,7 +8,7 @@ from datetime import timedelta
 DEBUG = False
 ALLOWED_HOSTS = ['*']  # Configure this properly for production
 
-# Simplified INSTALLED_APPS for production
+# Minimal INSTALLED_APPS for production - only essential packages
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',

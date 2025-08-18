@@ -10,10 +10,6 @@ django-cors-headers==4.3.1
 # JWT Authentication
 djangorestframework-simplejwt==5.3.0
 
-# Django Authentication
-django-allauth==0.57.0
-djangorestframework-auth==0.1.0
-
 # Production dependencies
 gunicorn==21.2.0
 whitenoise==6.5.0
