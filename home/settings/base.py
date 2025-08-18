@@ -5,6 +5,9 @@ SECRET_KEY = '-05sgp9!deq=q1nltm@^^2cc+v29i(tyybv3v2t77qi66czazj'
 DEBUG = True
 ALLOWED_HOSTS = []
 
+# Custom User Model - This is crucial!
+AUTH_USER_MODEL = 'users.User'
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -22,6 +25,12 @@ INSTALLED_APPS = [
     'rest_auth.registration',
     'rest_framework',
     'rest_framework.authtoken',
+    
+    # Custom apps - These must be included for the custom User model to work
+    'users',
+    'tests',
+    'questions',
+    'results',
 ]
 
 MIDDLEWARE = [

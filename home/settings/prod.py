@@ -8,6 +8,9 @@ from datetime import timedelta
 DEBUG = False
 ALLOWED_HOSTS = ['*']  # Configure this properly for production
 
+# Ensure AUTH_USER_MODEL is set (inherited from base)
+# AUTH_USER_MODEL = 'users.User'  # This should come from base.py
+
 # Minimal INSTALLED_APPS for production - only essential packages
 INSTALLED_APPS = [
     'django.contrib.admin',
