@@ -88,3 +88,29 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }
+
+# Auto-create test user after migrations
+def create_test_user(sender, **kwargs):
+    """Create a test user after migrations complete"""
+    try:
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        
+        if not User.objects.filter(email='test@example.com').exists():
+            user = User.objects.create_user(
+                username='testuser',
+                email='test@example.com',
+                password='testpass123',
+                first_name='Test',
+                last_name='User',
+                role='STUDENT'
+            )
+            print(f"Created test user: {user.email}")
+        else:
+            print("Test user already exists")
+    except Exception as e:
+        print(f"Error creating test user: {e}")
+
+# Connect the signal
+from django.db.models.signals import post_migrate
+post_migrate.connect(create_test_user, sender=None)
