@@ -27,15 +27,23 @@ def debug_db(_request):
 		# Test database connection
 		with connection.cursor() as cursor:
 			cursor.execute("SELECT 1")
-		
+
 		user_count = User.objects.count()
 		users = list(User.objects.values('id', 'email', 'username', 'role'))
+		
+		# Test authentication for test user
+		from django.contrib.auth import authenticate
+		test_auth = authenticate(email='test@example.com', password='testpass123')
+		auth_status = "SUCCESS" if test_auth else "FAILED"
+		
 		return JsonResponse({
 			"message": "Database status",
 			"user_count": user_count,
 			"users": users,
 			"database_configured": True,
-			"connection_test": "OK"
+			"connection_test": "OK",
+			"test_user_auth": auth_status,
+			"test_user_exists": User.objects.filter(email='test@example.com').exists()
 		})
 	except Exception as e:
 		return JsonResponse({

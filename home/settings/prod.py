@@ -94,6 +94,8 @@ def create_test_user(sender, **kwargs):
     """Create a test user after migrations complete"""
     try:
         from django.contrib.auth import get_user_model
+        from django.contrib.auth import authenticate
+        
         User = get_user_model()
         
         if not User.objects.filter(email='test@example.com').exists():
@@ -106,10 +108,36 @@ def create_test_user(sender, **kwargs):
                 role='STUDENT'
             )
             print(f"Created test user: {user.email}")
+            
+            # Test password authentication immediately
+            test_auth = authenticate(email='test@example.com', password='testpass123')
+            if test_auth:
+                print(f"✅ Password authentication test PASSED for {user.email}")
+            else:
+                print(f"❌ Password authentication test FAILED for {user.email}")
+                # Try to debug the issue
+                print(f"User exists: {User.objects.filter(email='test@example.com').exists()}")
+                print(f"User is_active: {user.is_active}")
+                print(f"User password hash: {user.password[:50]}...")
+                
         else:
-            print("Test user already exists")
+            user = User.objects.get(email='test@example.com')
+            print(f"Test user already exists: {user.email}")
+            
+            # Test password authentication for existing user
+            test_auth = authenticate(email='test@example.com', password='testpass123')
+            if test_auth:
+                print(f"✅ Password authentication test PASSED for existing user {user.email}")
+            else:
+                print(f"❌ Password authentication test FAILED for existing user {user.email}")
+                # Try to debug the issue
+                print(f"User is_active: {user.is_active}")
+                print(f"User password hash: {user.password[:50]}...")
+                
     except Exception as e:
         print(f"Error creating test user: {e}")
+        import traceback
+        traceback.print_exc()
 
 # Connect the signal
 from django.db.models.signals import post_migrate
