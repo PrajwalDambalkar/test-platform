@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.http import JsonResponse
 from django.contrib.auth import get_user_model
+from django.db import connection
 
 User = get_user_model()
 
@@ -23,19 +24,25 @@ def test_auth(_request):
 
 def debug_db(_request):
 	try:
+		# Test database connection
+		with connection.cursor() as cursor:
+			cursor.execute("SELECT 1")
+		
 		user_count = User.objects.count()
 		users = list(User.objects.values('id', 'email', 'username', 'role'))
 		return JsonResponse({
 			"message": "Database status",
 			"user_count": user_count,
 			"users": users,
-			"database_configured": True
+			"database_configured": True,
+			"connection_test": "OK"
 		})
 	except Exception as e:
 		return JsonResponse({
 			"message": "Database error",
 			"error": str(e),
-			"database_configured": False
+			"database_configured": False,
+			"connection_test": "FAILED"
 		}, status=500)
 
 

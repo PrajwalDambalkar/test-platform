@@ -6,6 +6,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
 import logging
+import traceback
 from .serializers import (
     UserRegistrationSerializer, UserLoginSerializer, UserProfileSerializer,
     UserUpdateSerializer, ChangePasswordSerializer
@@ -22,27 +23,36 @@ class UserRegistrationView(APIView):
     
     def post(self, request):
         logger.info(f"Registration attempt with data: {request.data}")
-        serializer = UserRegistrationSerializer(data=request.data)
-        if serializer.is_valid():
-            try:
-                user = serializer.save()
-                refresh = RefreshToken.for_user(user)
-                logger.info(f"User {user.email} registered successfully")
-                return Response({
-                    'message': 'User registered successfully',
-                    'user': UserProfileSerializer(user).data,
-                    'tokens': {
-                        'refresh': str(refresh),
-                        'access': str(refresh.access_token),
-                    }
-                }, status=status.HTTP_201_CREATED)
-            except Exception as e:
-                logger.error(f"Error creating user: {str(e)}")
-                return Response({
-                    'error': f'Failed to create user: {str(e)}'
-                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        logger.error(f"Registration validation failed: {serializer.errors}")
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            serializer = UserRegistrationSerializer(data=request.data)
+            if serializer.is_valid():
+                try:
+                    user = serializer.save()
+                    refresh = RefreshToken.for_user(user)
+                    logger.info(f"User {user.email} registered successfully")
+                    return Response({
+                        'message': 'User registered successfully',
+                        'user': UserProfileSerializer(user).data,
+                        'tokens': {
+                            'refresh': str(refresh),
+                            'access': str(refresh.access_token),
+                        }
+                    }, status=status.HTTP_201_CREATED)
+                except Exception as e:
+                    logger.error(f"Error creating user: {str(e)}")
+                    logger.error(f"Traceback: {traceback.format_exc()}")
+                    return Response({
+                        'error': f'Failed to create user: {str(e)}'
+                    }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            else:
+                logger.error(f"Registration validation failed: {serializer.errors}")
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            logger.error(f"Unexpected error in registration: {str(e)}")
+            logger.error(f"Traceback: {traceback.format_exc()}")
+            return Response({
+                'error': f'Registration failed: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class UserLoginView(APIView):
     """
