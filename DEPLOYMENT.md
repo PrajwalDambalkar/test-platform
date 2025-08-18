@@ -53,7 +53,7 @@ Click "Deploy" and wait for the build to complete. You'll get a URL like: `https
    - **Name**: `your-app-backend`
    - **Environment**: `Python 3`
    - **Build Command**: `pip install -r requirements.txt`
-   - **Start Command**: `gunicorn home.wsgi:application`
+   - **Start Command**: `python manage.py migrate && python manage.py create_test_user && gunicorn home.wsgi:application`
    - **Plan**: **Free** (no time limit!)
 
 ### 3.2 Configure Environment Variables
