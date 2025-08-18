@@ -8,6 +8,23 @@ from datetime import timedelta
 DEBUG = False
 ALLOWED_HOSTS = ['*']  # Configure this properly for production
 
+# Simplified INSTALLED_APPS for production
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'corsheaders',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'users',
+    'tests',
+    'questions',
+    'results',
+]
+
 # Database
 DATABASES = {
     'default': dj_database_url.config(
@@ -30,7 +47,7 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 
 # CORS settings for production
 CORS_ALLOWED_ORIGINS = [
-    "https://your-vercel-app.vercel.app",  # Replace with your Vercel domain
+    "https://test-platform-navy.vercel.app",  # Your Vercel domain
     "http://localhost:3000",  # For local development
 ]
 
