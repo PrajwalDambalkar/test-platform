@@ -29,7 +29,11 @@ INSTALLED_APPS = [
 _database_url = os.environ.get('DATABASE_URL')
 if _database_url:
     DATABASES = {
-        'default': dj_database_url.config(default=_database_url, conn_max_age=600)
+        'default': dj_database_url.config(
+            default=_database_url,
+            conn_max_age=600,
+            ssl_require=False,  # Internal Render connections do not require SSL
+        )
     }
 else:
     DATABASES = {
