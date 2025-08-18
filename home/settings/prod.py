@@ -8,8 +8,8 @@ from datetime import timedelta
 DEBUG = False
 ALLOWED_HOSTS = ['*']  # Configure this properly for production
 
-# Ensure AUTH_USER_MODEL is set (inherited from base)
-# AUTH_USER_MODEL = 'users.User'  # This should come from base.py
+# Ensure AUTH_USER_MODEL is explicitly set for production
+AUTH_USER_MODEL = 'users.User'
 
 # Minimal INSTALLED_APPS for production - only essential packages
 INSTALLED_APPS = [
@@ -30,7 +30,9 @@ INSTALLED_APPS = [
 
 # Database: use DATABASE_URL if provided; otherwise fall back to SQLite (ephemeral)
 _database_url = os.environ.get('DATABASE_URL')
+print(f"Database URL found: {'Yes' if _database_url else 'No'}")
 if _database_url:
+    print(f"Using PostgreSQL with URL: {_database_url[:50]}...")
     DATABASES = {
         'default': dj_database_url.config(
             default=_database_url,
@@ -38,7 +40,9 @@ if _database_url:
             ssl_require=False,  # Internal Render connections do not require SSL
         )
     }
+    print(f"Database config: {DATABASES['default']}")
 else:
+    print("Using SQLite fallback")
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
