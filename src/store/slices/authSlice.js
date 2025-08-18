@@ -1,12 +1,12 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import api from '../../api';
 
 // Async thunks
 export const registerUser = createAsyncThunk(
   'auth/register',
   async (userData, { rejectWithValue }) => {
     try {
-      const response = await axios.post('/api/auth/register/', userData);
+      const response = await api.post('/api/users/register/', userData);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Registration failed');
@@ -18,7 +18,7 @@ export const loginUser = createAsyncThunk(
   'auth/login',
   async (credentials, { rejectWithValue }) => {
     try {
-      const response = await axios.post('/api/auth/login/', credentials);
+      const response = await api.post('/api/users/login/', credentials);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Login failed');
@@ -30,7 +30,7 @@ export const logoutUser = createAsyncThunk(
   'auth/logout',
   async (refreshToken, { rejectWithValue }) => {
     try {
-      await axios.post('/api/auth/logout/', { refresh_token: refreshToken });
+      await api.post('/api/users/logout/', { refresh_token: refreshToken });
       return 'Logout successful';
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Logout failed');
@@ -46,7 +46,7 @@ export const fetchUserProfile = createAsyncThunk(
       const config = {
         headers: { Authorization: `Bearer ${auth.accessToken}` }
       };
-      const response = await axios.get('/api/auth/profile/', config);
+      const response = await api.get('/api/users/profile/', config);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Failed to fetch profile');
@@ -62,7 +62,7 @@ export const updateUserProfile = createAsyncThunk(
       const config = {
         headers: { Authorization: `Bearer ${auth.accessToken}` }
       };
-      const response = await axios.put('/api/auth/update/', userData, config);
+      const response = await api.put('/api/users/update/', userData, config);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Failed to update profile');
