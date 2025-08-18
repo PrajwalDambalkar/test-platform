@@ -5,11 +5,13 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
+import logging
 from .serializers import (
     UserRegistrationSerializer, UserLoginSerializer, UserProfileSerializer,
     UserUpdateSerializer, ChangePasswordSerializer
 )
 
+logger = logging.getLogger(__name__)
 User = get_user_model()
 
 class UserRegistrationView(APIView):
@@ -19,18 +21,27 @@ class UserRegistrationView(APIView):
     permission_classes = [permissions.AllowAny]
     
     def post(self, request):
+        logger.info(f"Registration attempt with data: {request.data}")
         serializer = UserRegistrationSerializer(data=request.data)
         if serializer.is_valid():
-            user = serializer.save()
-            refresh = RefreshToken.for_user(user)
-            return Response({
-                'message': 'User registered successfully',
-                'user': UserProfileSerializer(user).data,
-                'tokens': {
-                    'refresh': str(refresh),
-                    'access': str(refresh.access_token),
-                }
-            }, status=status.HTTP_201_CREATED)
+            try:
+                user = serializer.save()
+                refresh = RefreshToken.for_user(user)
+                logger.info(f"User {user.email} registered successfully")
+                return Response({
+                    'message': 'User registered successfully',
+                    'user': UserProfileSerializer(user).data,
+                    'tokens': {
+                        'refresh': str(refresh),
+                        'access': str(refresh.access_token),
+                    }
+                }, status=status.HTTP_201_CREATED)
+            except Exception as e:
+                logger.error(f"Error creating user: {str(e)}")
+                return Response({
+                    'error': f'Failed to create user: {str(e)}'
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        logger.error(f"Registration validation failed: {serializer.errors}")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UserLoginView(APIView):
@@ -40,27 +51,39 @@ class UserLoginView(APIView):
     permission_classes = [permissions.AllowAny]
     
     def post(self, request):
+        logger.info(f"Login attempt for email: {request.data.get('email')}")
         serializer = UserLoginSerializer(data=request.data)
         if serializer.is_valid():
             email = serializer.validated_data['email']
             password = serializer.validated_data['password']
-            user = authenticate(request, email=email, password=password)
             
-            if user:
-                refresh = RefreshToken.for_user(user)
+            try:
+                user = authenticate(request, email=email, password=password)
+                logger.info(f"Authentication result for {email}: {user is not None}")
+                
+                if user:
+                    refresh = RefreshToken.for_user(user)
+                    logger.info(f"User {email} logged in successfully")
+                    return Response({
+                        'message': 'Login successful',
+                        'user': UserProfileSerializer(user).data,
+                        'tokens': {
+                            'refresh': str(refresh),
+                            'access': str(refresh.access_token),
+                        }
+                    }, status=status.HTTP_200_OK)
+                else:
+                    logger.warning(f"Invalid credentials for {email}")
+                    return Response({
+                        'error': 'Invalid credentials'
+                    }, status=status.HTTP_401_UNAUTHORIZED)
+            except Exception as e:
+                logger.error(f"Error during login: {str(e)}")
                 return Response({
-                    'message': 'Login successful',
-                    'user': UserProfileSerializer(user).data,
-                    'tokens': {
-                        'refresh': str(refresh),
-                        'access': str(refresh.access_token),
-                    }
-                }, status=status.HTTP_200_OK)
-            else:
-                return Response({
-                    'error': 'Invalid credentials'
-                }, status=status.HTTP_401_UNAUTHORIZED)
+                    'error': f'Login failed: {str(e)}'
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
+        logger.error(f"Login validation failed: {serializer.errors}")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UserProfileView(generics.RetrieveUpdateAPIView):

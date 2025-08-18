@@ -18,14 +18,25 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             'last_name', 'role', 'phone_number', 'date_of_birth'
         ]
         extra_kwargs = {
-            'first_name': {'required': True},
-            'last_name': {'required': True},
-            'role': {'required': True}
+            'first_name': {'required': False, 'allow_blank': True},
+            'last_name': {'required': False, 'allow_blank': True},
+            'role': {'required': False, 'default': 'STUDENT'},
+            'phone_number': {'required': False, 'allow_blank': True},
+            'date_of_birth': {'required': False, 'allow_null': True}
         }
     
     def validate(self, attrs):
         if attrs['password'] != attrs['password2']:
             raise serializers.ValidationError("Passwords don't match")
+        
+        # Set default values if not provided
+        if not attrs.get('first_name'):
+            attrs['first_name'] = attrs.get('username', '')
+        if not attrs.get('last_name'):
+            attrs['last_name'] = ''
+        if not attrs.get('role'):
+            attrs['role'] = 'STUDENT'
+            
         return attrs
     
     def create(self, validated_data):
@@ -48,7 +59,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             'id', 'email', 'username', 'first_name', 'last_name', 'role',
-            'profile_picture', 'bio', 'date_of_birth', 'phone_number',
+            'bio', 'date_of_birth', 'phone_number',
             'student_id', 'grade_level', 'teacher_id', 'subject_taught',
             'years_of_experience', 'department', 'date_joined'
         ]
@@ -61,7 +72,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            'first_name', 'last_name', 'profile_picture', 'bio',
+            'first_name', 'last_name', 'bio',
             'date_of_birth', 'phone_number', 'student_id', 'grade_level',
             'teacher_id', 'subject_taught', 'years_of_experience', 'department'
         ]
