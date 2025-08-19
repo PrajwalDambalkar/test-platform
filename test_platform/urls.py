@@ -8,10 +8,10 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # path('api/auth/', include('users.urls')),
-    # path('api/tests/', include('tests.urls')),
-    # path('api/questions/', include('questions.urls')),
-    # path('api/results/', include('results.urls')),
+    path('api/auth/', include('users.urls')),
+    path('api/tests/', include('tests.urls')),
+    path('api/questions/', include('questions.urls')),
+    path('api/results/', include('results.urls')),
 ]
 
 # Serve static and media files during development

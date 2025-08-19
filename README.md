@@ -1,14 +1,3 @@
-<p align="center">
-  <p align="center">
-    <a href="https://justdjango.com/?utm_source=github&utm_medium=logo" target="_blank">
-      <img src="https://assets.justdjango.com/static/branding/logo.svg" alt="JustDjango" height="72">
-    </a>
-  </p>
-  <p align="center">
-    The Definitive Django Learning Platform.
-  </p>
-</p>
-
 # Test Platform - Django + React
 
 A comprehensive test platform built with Django backend and React frontend, supporting three user roles: Students, Teachers, and Administrators.
@@ -108,8 +97,10 @@ test-platform/
 
 4. **Set up environment variables**
    ```bash
-   cp config.py .env
-   # Edit .env with your configuration
+   # Create a .env file with your configuration
+   SECRET_KEY=your-secret-key
+   DEBUG=True
+   DATABASE_URL=your-database-url
    ```
 
 5. **Run migrations**

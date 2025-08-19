@@ -1,9 +1,12 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from . import views
 
-app_name = 'results'
+router = DefaultRouter()
+router.register(r'results', views.ResultViewSet)
 
 urlpatterns = [
-    # Placeholder - we'll add real endpoints later
-    path('', views.result_list, name='result_list'),
+    path('', include(router.urls)),
+    path('list/', views.result_list, name='result-list'),
+    path('create/', views.create_result, name='create-result'),
 ]

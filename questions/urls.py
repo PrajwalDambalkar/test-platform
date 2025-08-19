@@ -1,9 +1,12 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from . import views
 
-app_name = 'questions'
+router = DefaultRouter()
+router.register(r'questions', views.QuestionViewSet)
 
 urlpatterns = [
-    # Placeholder - we'll add real endpoints later
-    path('', views.question_list, name='question_list'),
+    path('', include(router.urls)),
+    path('list/', views.question_list, name='question-list'),
+    path('create/', views.create_question, name='create-question'),
 ]
